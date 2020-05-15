@@ -3,6 +3,7 @@
     margin: auto;
     margin-top: 36px;
     background-color: #fff;
+    padding: 8px;
   }
   .k-scroll-container {
     overflow-x: hidden;
@@ -13,6 +14,11 @@
   .k-scroll-container .k-scroll-inner-container {
     display: inline-block;
   }
+
+  .k-scroll-container .k-scroll-inner-container.no-select {
+    pointer-events: none;
+  }
+
   .k-scroll-container .k-scroll-inner-container .k-scroll-flex {
     display: flex;
     white-space: nowrap;
