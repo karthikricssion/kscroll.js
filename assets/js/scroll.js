@@ -5,6 +5,7 @@
     // SETTINGS FOR CAROUSEL EVENTS
     var isMouseDown = false
     var containerLeftPos = 0
+    var mouseDistance = 0
 
     // Getting the mouse position
     function getMousePosition(e, $this) {
@@ -67,56 +68,158 @@
     }
 
     function calculateScrollPos() {
-        // Logic work has to made
-        var dis = 0
+        var pos = 0
         var symbol = ''
+        var oldMouseDistance = mouseDistance
+        mouseDistance = 0
+
         if(scrollPos.mousedown.clientX > scrollPos.mousemove.x) {
-            dis = scrollPos.mousedown.clientX - scrollPos.mousemove.x
+            mouseDistance = scrollPos.mousedown.clientX - scrollPos.mousemove.x
             symbol = '-'
-            console.log('mousedown position is greater', scrollPos.mousedown.clientX - scrollPos.mousemove.x )
+            mouseDistance = -mouseDistance
         } else {
-            dis = scrollPos.mousemove.x - scrollPos.mousedown.clientX
+            mouseDistance = scrollPos.mousemove.x - scrollPos.mousedown.clientX
             symbol = '+'
-            console.log('mousedown position is lesser', scrollPos.mousemove.x - scrollPos.mousedown.clientX)
+            mouseDistance = +mouseDistance
         }
 
-        innerDoc[0].style.transform = 'translateX('+symbol+''+dis+'px)';
+        var dvStyle = innerDoc[0].getAttribute('style');
+        if(dvStyle) {
+            var transZRegex = /\.*translateX\((.*)px\)/i;            
+            var zTrans = transZRegex.exec(dvStyle)[1];
+            containerLeftPos = parseInt(zTrans)
+        }
     }
+
+    // working with button controls
+    var moveLeft = document.getElementById('moveLeft')
+    var reset = document.getElementById('reset')
+    var moveRight = document.getElementById('moveRight')
     
+    // Getting the default values of containers
+    var itemContainerWidth = el.offsetWidth
+    var innerItemContainerWidth = innerDoc[0].offsetWidth
+    var position = 0
+    var startX = 0
+    var endX = 0
+
+    var showLeftArrow = function() {
+        if(position <= (0 - 8)) {
+            moveRight.style.visibility = 'visible'
+        } else {
+            moveRight.style.visibility = 'hidden'
+        }
+    }
+
+    var showRightArrow = function() {
+        if( (-(position) + itemContainerWidth) < innerItemContainerWidth  + 8) {
+            moveLeft.style.visibility = 'visible'
+        } else {
+            moveLeft.style.visibility = 'hidden'
+        }
+    }
+
+    var checkAndShowNavs = function() {
+        showLeftArrow();
+        showRightArrow()
+    }
+
+    var checkAndMoveCarousel = function(pos , distance) {
+        if(pos === 'left') {
+            if( (-(position) + itemContainerWidth) < innerItemContainerWidth  + 8) {
+                
+                position = position + (-distance)
+                // check if the inner container end value less than 
+                // the positon derived then need to fix the point to 
+                // container end and also position
+
+                var removeNg = -(position)
+                if(removeNg <= ((innerItemContainerWidth + 8) - itemContainerWidth)) {
+                    innerDoc[0].style.transform = 'translateX('+position+'px)';                
+                }
+            }
+        } else if(pos === 'right') {
+            console.log(position)
+            if(position < 0) {
+                position += distance
+                // check if the inner container start value less than 
+                // 0 if derived position execeeds then fix to 0
+                if(position <= 0) {
+                    innerDoc[0].style.transform = 'translateX('+position+'px)';
+                }
+            }
+        } else if(pos === 'reset') {
+            position = 0 
+            innerDoc[0].style.transform = 'translateX('+position+'px)';            
+        }
+        checkAndShowNavs(position)
+    }
+
+    // Writing clickable function to control over the carousel
+    moveLeft.addEventListener('click', function(e) {
+        checkAndMoveCarousel('left', 1)
+    })
+
+    moveRight.addEventListener('click', function(e) {   
+        checkAndMoveCarousel('right', 1)
+    })
+
+    reset.addEventListener('click', function(e) {
+        checkAndMoveCarousel('reset')
+    })
+
     // Setting isMouseDown to true once the user clicks
     // on the el container
     el.addEventListener('mousedown', function(e) {
         var data = getMousePosition(e, this)
-        scrollPos.mousedown.x = data.x
-        scrollPos.mousedown.y = data.y
-        scrollPos.mousedown.offLef = data.offLef
-        scrollPos.mousedown.clientX = data.x + data.offLef
+        startX = data.x
         isMouseDown = true
     })
 
+    var distanceMove = 0
     window.addEventListener('mousemove', function(e) {
         if(isMouseDown) {
             innerDoc[0].classList.add("no-select");
             var data = getMousePosition(e, this)
-            scrollPos.mousemove.x = data.x
-            scrollPos.mousemove.y = data.y
-            calculateScrollPos()
+            endX = data.x
+
+            var positionType = ''
+            if(startX > endX) {
+                positionType = 'left'
+                var oldDistanceMove = distanceMove
+                distanceMove = startX - endX
+                // console.log(oldDistanceMove, distanceMove)
+                if(oldDistanceMove != distanceMove) {
+                    // console.log(oldDistanceMove, distanceMove)
+                    checkAndMoveCarousel(positionType, distanceMove)
+                }
+            } else if(startX < endX) {
+                positionType = 'right'
+                distanceMove = endX - startX                
+                if(oldDistanceMove != distanceMove) {
+                    // console.log(oldDistanceMove, distanceMove)
+                    checkAndMoveCarousel(positionType, distanceMove)
+                }
+            }
         }
     })
 
     window.addEventListener('mouseup', function(e) {
         if(isMouseDown) {
+            var data = getMousePosition(e, this)
             isMouseDown = false
             innerDoc[0].classList.remove("no-select");
-            console.log('Am setting it to false')
-            resetScrollPos()
         }
     })
 
+    // Add click event listener for each item
+    // This will be based on config in near future
     document.querySelectorAll('.k-scroll-item').forEach(item => {
         item.addEventListener('click', event => {
             event.stopPropagation()
             console.log('I am clicked!')
         })
     })
+
+    checkAndShowNavs()
 })();
