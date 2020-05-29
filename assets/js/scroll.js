@@ -40,6 +40,13 @@
         }
     }
 
+    // Getting the touch position
+    function getTouchPosition(e, $this) {
+        return {
+            x: e.touches[0].clientX
+        }
+    }
+
     var scrollPos = {
         mousedown: {
             x: 0,
@@ -213,18 +220,59 @@
 
     window.addEventListener('mouseup', function(e) {
         if(isMouseDown) {
-            var data = getMousePosition(e, this)
             isMouseDown = false
             innerDoc[0].classList.remove("no-select");
         }
     })
+
+    // Touch Events
+    el.addEventListener("touchstart", function(e){
+        var data = getTouchPosition(e, this)
+        startX = data.x
+        isMouseDown = true
+    });
+
+    window.addEventListener("touchmove", function(e) {
+        if(isMouseDown) {
+            innerDoc[0].classList.add("no-select");
+            var data = getTouchPosition(e, this)
+            endX = data.x
+
+            var positionType = ''
+            if(startX > endX) {
+                positionType = 'left'
+                var oldDistanceMove = distanceMove
+                distanceMove = startX - endX
+                
+                if(oldDistanceMove != distanceMove) {
+                    checkAndMoveCarousel(positionType, distanceMove)
+                }
+                
+            } else if(startX < endX) {
+                positionType = 'right'
+                distanceMove = endX - startX                
+                if(oldDistanceMove != distanceMove) {
+                    checkAndMoveCarousel(positionType, distanceMove)
+                }
+            }
+
+            startX = data.x
+        }
+    });
+
+    window.addEventListener("touchend", function(e) {
+        if(isMouseDown) {
+            isMouseDown = false
+            innerDoc[0].classList.remove("no-select");
+        }
+    });
 
     // Add click event listener for each item
     // This will be based on config in near future
     document.querySelectorAll('.k-scroll-item').forEach(item => {
         item.addEventListener('click', event => {
             event.stopPropagation()
-            console.log('I am clicked!')
+            // console.log('I am clicked!')
         })
     })
 

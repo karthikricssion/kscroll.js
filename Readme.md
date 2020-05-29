@@ -13,3 +13,4 @@ Ref \
 https://developer.mozilla.org/en-US/docs/Web/API/Element/mousemove_event \
 https://github.com/morgansson/g-scrolling-carousel/blob/master/jquery.gScrollingCarousel.js \
 https://github.com/morgansson/g-scrolling-carousel/blob/master/jquery.gScrollingCarousel.css
+https://codepen.io/RG/pen/uFove?editors=0010
