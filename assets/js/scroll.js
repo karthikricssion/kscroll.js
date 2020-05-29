@@ -125,9 +125,9 @@
     }
 
     var checkAndMoveCarousel = function(pos , distance) {
+        // console.log(pos, distance)
         if(pos === 'left') {
             if( (-(position) + itemContainerWidth) < innerItemContainerWidth  + 8) {
-                
                 position = position + (-distance)
                 // check if the inner container end value less than 
                 // the positon derived then need to fix the point to 
@@ -136,15 +136,20 @@
                 var removeNg = -(position)
                 if(removeNg <= ((innerItemContainerWidth + 8) - itemContainerWidth)) {
                     innerDoc[0].style.transform = 'translateX('+position+'px)';                
+                } else {
+                    innerDoc[0].style.transform = 'translateX(-'+(((innerItemContainerWidth + 8) - itemContainerWidth))+'px)';
                 }
             }
         } else if(pos === 'right') {
-            console.log(position)
             if(position < 0) {
                 position += distance
                 // check if the inner container start value less than 
                 // 0 if derived position execeeds then fix to 0
+                
                 if(position <= 0) {
+                    innerDoc[0].style.transform = 'translateX('+position+'px)';
+                } else {
+                    position = 0 
                     innerDoc[0].style.transform = 'translateX('+position+'px)';
                 }
             }
@@ -201,6 +206,8 @@
                     checkAndMoveCarousel(positionType, distanceMove)
                 }
             }
+
+            startX = data.x
         }
     })
 
